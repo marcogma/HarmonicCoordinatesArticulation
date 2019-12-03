@@ -56,16 +56,7 @@ void build_linspace(MatrixXd& linspace, const MatrixXd& V) {
 // This function is called every time a keyboard button is pressed
 bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier)
 {
-	if (key == '1')
-	{
-		progressive_hulls(V,F,150,U,G,J);
 
-		//curve_renderer.draw_curve(plot);
-
-		viewer.data().clear();
-		viewer.data().set_mesh(U, G);
-		return true;
-	}
 	if (key == '2')
 	{
 		int x = viewer.current_mouse_x;
@@ -74,11 +65,6 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		MatrixXd point(1,3);
 		point << x, y,0;
 		draw_points(viewer, point);
-
-	}
-
-	if (key == 'S' || key == 's') // write the mesh to file (OFF format)
-	{
 
 	}
 
@@ -115,6 +101,22 @@ void createOctagon(MatrixXd &Vertices, MatrixXi &Faces)
 		5, 1, 4;
 }
 
+
+void createRectangle(MatrixXd& Vertices, MatrixXi& Faces)
+{
+	Vertices = MatrixXd(4, 3);
+	Faces = MatrixXi(2, 3);
+
+	Vertices << 0.0, 0.0, 0.0,
+		10.000000, 0.000000, 0.000000,
+		0.000000, 10.000000, 0.000000,
+		10.000000, 10.000000, 0.000000,
+
+
+	Faces << 0, 1, 2,
+		2, 3, 1;
+}
+
 // ------------ main program ----------------
 int main(int argc, char *argv[])
 {
@@ -122,7 +124,8 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 	{
 		std::cout << "Creating an octagon" << std::endl;
-		createOctagon(V, F);
+		//createOctagon(V, F);
+		createRectangle(V, F);
 	}
 	else
 	{
@@ -131,32 +134,22 @@ int main(int argc, char *argv[])
 		igl::readPLY(argv[2], Vi, Fi);
 
 	}
+
 	igl::opengl::glfw::Viewer viewer; // create the 3d viewer
 	viewer.callback_key_down = &key_down;
 
-	LinearInterpolation interp(V);
-	int resolution = 500; // resolution of displayed curve
-	MatrixXd linspace = MatrixXd::Zero(resolution, 3);
-	build_linspace(linspace, V); // initialize the X axis of the interpolation
+	//draw_points(viewer, V); // draw the bounding box (red edges and vertices)
+	//draw_curve(viewer, V);
 
-	for (size_t i = 0; i < resolution; i++) {
-		linspace(i, 1) = interp.eval_function(linspace(i, 0));
-	}
-
-	draw_points(viewer, V); // draw the bounding box (red edges and vertices)
-	draw_curve(viewer, V);
-
-	draw_points(viewer, Vi); // draw the bounding box (red edges and vertices)
-	draw_curve(viewer, Vi);
+	//draw_points(viewer, Vi); // draw the bounding box (red edges and vertices)
+	//draw_curve(viewer, Vi);
 
 
 
-	//viewer.data().set_mesh(V, F);
+	viewer.data().set_mesh(V, F);
 	cout << V.rows();
 	Util curve_renderer(viewer);
-	//progressive_hulls(V, F, 100, U, G, J);
-	//draw_points(viewer, U);
-	//curve_renderer.draw_curve(U);
+
 	viewer.core(0).align_camera_center(V, F);
 	viewer.launch(); // run the viewer
 	
