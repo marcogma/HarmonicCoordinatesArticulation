@@ -110,13 +110,27 @@ void createRectangle(MatrixXd& Vertices, MatrixXi& Faces)
 	Faces = MatrixXi(2, 3);
 
 	Vertices << 0.0, 0.0, 0.0,
-		5.0, 0.000000, 0.000000,
-		5.0, 5.0, 0.000000,
-		0.000000, 5.0, 0.000000,
+				5.0, 0.000000, 0.000000,
+				5.0, 5.0, 0.000000,
+				0.000000, 5.0, 0.000000,
 
 
 	Faces << 0, 1, 2,
 		2, 3, 1;
+}
+
+void createTriangle(MatrixXd& Vertices, MatrixXi& Faces)
+{
+	Vertices = MatrixXd(3, 3);
+	Faces = MatrixXi(1, 3);
+
+	
+	Vertices << 2.0, 2.0, 0.0,
+				4.0, 4.000000, 0.000000,
+				6.0, 2.0, 0.000000,
+
+
+	Faces << 0, 1, 2;
 }
 
 // ------------ main program ----------------
@@ -136,12 +150,14 @@ int main(int argc, char *argv[])
 		//igl::readPLY(argv[2], Vi, Fi);
 
 	}
-	createRectangle(V, F);
-	Grid G(15,0.5);
+	//createRectangle(V, F);
+	Grid G(6);
 	//Cage C(V);
-
 	G.Add_Cage(V);
+	//std:: cout << "FINISHED!" << std::endl;
+	//G.Print_Grid();
 	G.Fill_Grid_Regions();
+	std:: cout << "FINISHED!" << std::endl;
 	G.Print_Grid();
 
 	igl::opengl::glfw::Viewer viewer; // create the 3d viewer

@@ -1,6 +1,8 @@
 #include <igl/opengl/glfw/Viewer.h>
 #include <iostream>
 #include <ostream>
+#include <cmath>
+#include <math.h>
 
 
 using namespace Eigen;
@@ -10,23 +12,34 @@ using namespace Eigen;
 #define INTERIOR 2
 #define EXTERIOR 3
 
+const float xMin = -10;
+const float yMin = -10;
+const float xMax = 10;
+const float yMax = 10;
+
 class Grid
 {
-  int size;
-  float Step; 
-  Eigen::MatrixXi G;  //Grid size*size. G(x,y) represents a Region: UNTYPED,BOUNDARY,INTERIOR,EXTERIOR
-  Eigen::MatrixXi Coarse_G;  //Grid size-1*size-1. G(x,y) represents coarse version of G, following the "pulling" rules
-  Eigen::MatrixXf Harmonics; //size*size Harmonics(x,y) contains the Harmonic Coordinate of vertex x,y
-  Eigen::MatrixXi InteriorV;
-  std::vector<MatrixXd> v_Harmonics;
+
+  private:
+  	int size;
+  	float step; 
+  	Eigen::MatrixXi G;  //Grid size*size. G(x,y) represents a Region: UNTYPED,BOUNDARY,INTERIOR,EXTERIOR
+  	Eigen::MatrixXi Coarse_G;  //Grid size-1*size-1. G(x,y) represents coarse version of G, following the "pulling" rules
+  	Eigen::MatrixXf Harmonics; //size*size Harmonics(x,y) contains the Harmonic Coordinate of vertex x,y
+  	Eigen::MatrixXi InteriorV;
+  	std::vector<MatrixXd> v_Harmonics;
+	
+
 
   public:
-    Grid(const int &s, const float &step){
-      size = s;
-	  Step = step;
-	  G = Eigen::MatrixXi::Zero(s, s);
-	  Harmonics = Eigen::MatrixXf::Zero(s, s);
-	  Coarse_G= Eigen::MatrixXi::Zero(s-1, s-1);
+
+    Grid(const int &s){
+      size = std::pow(2,s);
+	  step = (xMax - xMin) / (size - 1);
+	  G = Eigen::MatrixXi::Zero(size, size);
+	  //std::cout << G.rows() << " " << G.cols() << std::endl;
+	  Harmonics = Eigen::MatrixXf::Zero(size, size);
+	  //Coarse_G= Eigen::MatrixXi::Zero(s-1, s-1);
     }
 
     void Tag_Cell(int x, int y, int value)
@@ -44,40 +57,42 @@ class Grid
 		for (int i = 0; i < cage.rows(); i++)
 		{
 			int x0, y0, x1, y1;
-			x0 = (int)cage.row(i)(0) / Step;
-			y0 = (int)cage.row(i)(1) / Step;
+			x0 = (int)(cage.row(i)(0) - xMin) / step;
+			y0 = (int)(cage.row(i)(1) - yMin) / step;
 			if (i < cage.rows() - 1)
 			{
-				x1 = (int)cage.row(i + 1)(0) / Step;
-				y1 = (int)cage.row(i + 1)(1) / Step;
+				x1 = (int) (cage.row(i + 1)(0) - xMin) / step;
+				y1 = (int) (cage.row(i + 1)(1) - yMin) / step;
 			}
 			else
 			{
-				x1 = (int)cage.row(0)(0) / Step;
-				y1 = (int)cage.row(0)(1) / Step;
+				x1 = (int) (cage.row(0)(0) - xMin) / step;
+				y1 = (int) (cage.row(0)(1) - yMin) / step;
 			}
-			
 			BresenhamsAlgorithm(x0,y0,x1,y1,i);
 		}
-
 
 		
 	}
 
 	//Traverse the grid and changes the OldTag to a NewTag until a StopTag Appears 
-	void Flood_Fill(int x, int y, int OldTag, int NewTag, int StopTag)
+	void Flood_Fill(int x, int y)
 	{
-		if (x < 0 || x >= size || y < 0 || y >= size || OldTag== StopTag)
+		if (x < 0 || x > size - 1 || y < 0 || y > size - 1)
 			return;
 
-		G(x,y) = NewTag;
+		if (G(x, y) == BOUNDARY || G(x,y) == EXTERIOR)
+			return;
 
-		Flood_Fill( x + 1, y, G(x+1, y), NewTag, StopTag);
-		Flood_Fill( x - 1, y, G(x-1, y), NewTag, StopTag);
-		Flood_Fill( x, y + 1, G(x, y+1), NewTag, StopTag);
-		Flood_Fill( x, y - 1, G(x, y-1), NewTag, StopTag);
+		G(x,y) = EXTERIOR;
+
+		Flood_Fill( x + 1, y);
+		Flood_Fill( x - 1, y);
+		Flood_Fill( x, y + 1);
+		Flood_Fill( x, y - 1);
 		
 	}
+	
 
 
 	//Interpolation of cage vertices (discretize the cage) , it must set the BOUNDARY region and calculate Harmonic in cage
@@ -125,8 +140,8 @@ class Grid
 	//Fill the grid starting with exterior region and then the interior
 	void Fill_Grid_Regions()
 	{
-		Flood_Fill(0, 0, G(0, 0), EXTERIOR, BOUNDARY);
-
+		Flood_Fill(0, 0);
+		std::cout << "Working!" << std::endl;
 		for (int x = 0; x < size; x++)
 		{
 			for (int y = 0; y < size; y++)
@@ -136,7 +151,7 @@ class Grid
 					G(x, y) = INTERIOR;
 
 					
-				}
+			 	}
 			}
 
 		}
