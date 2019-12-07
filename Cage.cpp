@@ -6,12 +6,12 @@ using namespace Eigen;
 class Cage
 {
   int size;
-  Eigen::MatrixXi V;
+  Eigen::MatrixXd V;
 
   public:
-    Cage(const MatrixXd& Vi, const int& s ){
+    Cage(const MatrixXd& Vi ){
 		V = Vi;
-		size = s;
+		size = V.rows();
     }
 
   };

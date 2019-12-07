@@ -14,6 +14,8 @@
 #include <igl/per_face_normals.h>
 #include <igl/copyleft/progressive_hulls.h>
 #include <igl/readPLY.h>
+#include "Grid.cpp"
+#include "Cage.cpp"
 
 using namespace igl::copyleft;
 using namespace Eigen; // to use the classes provided by Eigen library
@@ -108,9 +110,9 @@ void createRectangle(MatrixXd& Vertices, MatrixXi& Faces)
 	Faces = MatrixXi(2, 3);
 
 	Vertices << 0.0, 0.0, 0.0,
-		10.000000, 0.000000, 0.000000,
-		0.000000, 10.000000, 0.000000,
-		10.000000, 10.000000, 0.000000,
+		5.0, 0.000000, 0.000000,
+		5.0, 5.0, 0.000000,
+		0.000000, 5.0, 0.000000,
 
 
 	Faces << 0, 1, 2,
@@ -130,23 +132,30 @@ int main(int argc, char *argv[])
 	else
 	{
 		//2D figures cage and object
-		igl::readPLY(argv[1], V, F);
-		igl::readPLY(argv[2], Vi, Fi);
+		//igl::readPLY(argv[1], V, F);
+		//igl::readPLY(argv[2], Vi, Fi);
 
 	}
+	createRectangle(V, F);
+	Grid G(15,0.5);
+	//Cage C(V);
+
+	G.Add_Cage(V);
+	G.Fill_Grid_Regions();
+	G.Print_Grid();
 
 	igl::opengl::glfw::Viewer viewer; // create the 3d viewer
 	viewer.callback_key_down = &key_down;
 
-	//draw_points(viewer, V); // draw the bounding box (red edges and vertices)
-	//draw_curve(viewer, V);
+	draw_points(viewer, V); // draw the bounding box (red edges and vertices)
+	draw_curve(viewer, V);
 
 	//draw_points(viewer, Vi); // draw the bounding box (red edges and vertices)
 	//draw_curve(viewer, Vi);
 
 
 
-	viewer.data().set_mesh(V, F);
+	//viewer.data().set_mesh(V, F);
 	cout << V.rows();
 	Util curve_renderer(viewer);
 
