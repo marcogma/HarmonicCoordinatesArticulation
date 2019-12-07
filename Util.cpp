@@ -1,170 +1,104 @@
-#include <igl/opengl/glfw/Viewer.h>
-#include <ostream>
+#include "Util.h"
+void draw_curve(igl::opengl::glfw::Viewer& viewer, const MatrixXd& V) {
+	viewer.append_mesh();
+	for (unsigned i = 0; i < V.rows() - 1; ++i)
+		viewer.data().add_edges(
+			V.row(i),
+			V.row(i + 1),
+			Eigen::RowVector3d(1, 0, 0));
+	viewer.data().add_edges(
+		V.row(V.rows()-1),
+		V.row(0),
+		Eigen::RowVector3d(1, 0, 0));
+}
 
-using namespace Eigen;
+/*draw points from the list of points V*/
+void draw_points(igl::opengl::glfw::Viewer& viewer, const MatrixXd& V) {
+	viewer.append_mesh();
+	viewer.data(0).add_points(V, Eigen::RowVector3d(1, 0, 0));
+}
+
+/*interpolate the leftmost and rightmost X position*/
+void build_linspace(MatrixXd& linspace, const MatrixXd& V) {
+	for (size_t i = 0; i < linspace.rows(); i++) {
+		linspace(i, 0) = V.col(0).minCoeff() + ((V.col(0).maxCoeff() - V.col(0).minCoeff()) / (linspace.rows() - 1)) * i;
+	}
+}
+
+// This function is called every time a keyboard button is pressed
+bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier)
+{
+
+	if (key == '2')
+	{
+		int x = viewer.current_mouse_x;
+		int y = viewer.core().viewport(3) - viewer.current_mouse_y;
+		cout << "Cursor Position at (" << x << " : " << y << endl;
+		MatrixXd point(1,3);
+		point << x, y,0;
+		draw_points(viewer, point);
+
+	}
+
+	return false;
+}
+
+
+
+
+
 
 /**
- * A class providing tools for drawing 3d curves
- * */
-class Util
+ * Create a triangle mesh corresponding to an octagon inscribed in the unit circle
+ */
+void createOctagon(MatrixXd &Vertices, MatrixXi &Faces)
 {
-public:
-  /*
-Initialize the viewer
-**/
-  Util(igl::opengl::glfw::Viewer &v)
-  {
-    viewer = &v;
-    viewer->append_mesh();
-    viewer->append_mesh();
-    viewer->append_mesh();
-    //viewer->append_mesh();
-    red = new RowVector3d(0.9, 0.1, 0.1);
-    green = new RowVector3d(0.1, 0.9, 0.1);
-    yellow = new RowVector3d(1.0, 1.0, 0.1);
-  }
+	Vertices = MatrixXd(6, 3);
+	Faces = MatrixXi(8, 3);
 
-  /*
-draw tangent vectors
-**/
-  void draw_tangents(const MatrixXd &V, const MatrixXd &dX)
-  {
-    std::cout << "Drawing tangents " << std::endl;
-    RowVector3d c = *green;
-    //viewer->append_mesh();
-    for (int i = 0; i < V.rows(); i++)
-    {
-      std::cout << i << " tangent at " << V.row(i) << ": " << dX << std::endl;
-      viewer->data(2).add_edges(
-          V.row(i),
-          V.row(i) + dX.row(i),
-          c);
-    }
-  }
+	Vertices << 0.0, 0.0, 1.0,
+		1.000000, 0.000000, 0.000000,
+		0.000000, 1.000000, 0.000000,
+		-1.000000, 0.000000, 0.000000,
+		0.000000, -1.000000, 0.000000,
+		0.000000, 0.000000, -1.000000;
 
-  /*
-draw tangent vectors
-**/
-  void draw_normals(const MatrixXd &V, const MatrixXd &dX)
-  {
-    std::cout << "Drawing tangents " << std::endl;
-    RowVector3d c = *yellow;
-    //viewer->append_mesh();
-    for (int i = 0; i < V.rows(); i++)
-    {
-      std::cout << i << " tangent at " << V.row(i) << ": " << dX << std::endl;
-      viewer->data(2).add_edges(
-          V.row(i),
-          V.row(i) + dX.row(i),
-          c);
-    }
-  }
+	Faces << 0, 1, 2,
+		0, 2, 3,
+		0, 3, 4,
+		0, 4, 1,
+		5, 2, 1,
+		5, 3, 2,
+		5, 4, 3,
+		5, 1, 4;
+}
 
-  /*
-draw a curve in 3D
-**/
-  void draw_curve(const MatrixXd &V)
-  {
-    //viewer->append_mesh();
-    for (unsigned i = 0; i < V.rows() - 1; ++i)
-      viewer->data(1).add_edges(
-          V.row(i),
-          V.row(i + 1),
-          Eigen::RowVector3d(1, 1, 1));
-  }
 
-  /*
-draw a curve in 3D
-**/
-  void draw_colored_curve(const MatrixXd &V, RowVector3d &color)
-  {
-    //viewer->append_mesh();
-    for (unsigned i = 0; i < V.rows() - 1; ++i)
-      viewer->data(1).add_edges(
-          V.row(i),
-          V.row(i + 1),
-          color);
-  }
+void createRectangle(MatrixXd& Vertices, MatrixXi& Faces)
+{
+	Vertices = MatrixXd(4, 3);
+	Faces = MatrixXi(2, 3);
 
-  /*
-draw a curve in 3D
-**/
-  void draw_close_curve(const MatrixXd &V)
-  {
-    //viewer->append_mesh();
-    for (unsigned i = 0; i < V.rows() - 1; ++i)
-    {
-      viewer->data(1).add_edges(
-          V.row(i),
-          V.row(i + 1),
-          Eigen::RowVector3d(0.1, 0.8, 0.1));
-    }
-    viewer->data(1).add_edges(V.row(V.rows() - 1), V.row(0), Eigen::RowVector3d(0.1, 0.8, 0.1));
-  }
+	Vertices << 0.0, 0.0, 0.0,
+				5.0, 0.000000, 0.000000,
+				5.0, 5.0, 0.000000,
+				0.000000, 5.0, 0.000000,
 
-  /*
-draw a curve in 3D
-**/
-  void draw_cylinder_grid(MatrixXd points[], int h)
-  {
-    for (int i = 0; i < h; i++)
-    {
-      draw_close_curve(points[i]);
-    }
 
-    int w=points[0].rows();
-    for (unsigned i = 0; i < w; ++i)
-    {
-      for(int j=0;j<h-1;j++)
-      viewer->data(1).add_edges(points[j].row(i), points[j+1].row(i), Eigen::RowVector3d(0.1, 0.8, 0.1));
-    }
-  }
+	Faces << 0, 1, 2,
+		2, 3, 1;
+}
 
-  /*
-draw a set of points in 3D
-**/
-  void draw_control_polygon(const MatrixXd &V)
-  {
-    RowVector3d r = *red;
-    //viewer->append_mesh();
-    for (unsigned i = 0; i < V.rows() - 1; ++i)
-      viewer->data(0).add_edges(
-          V.row(i),
-          V.row(i + 1),
-          r);
+void createTriangle(MatrixXd& Vertices, MatrixXi& Faces)
+{
+	Vertices = MatrixXd(3, 3);
+	Faces = MatrixXi(1, 3);
 
-    viewer->data(0).add_points(V, r);
-  }
+	
+	Vertices << 2.0, 2.0, 0.0,
+				4.0, 4.000000, 0.000000,
+				6.0, 2.0, 0.000000,
 
-  /**
-* draw a set of points in 3D
-**/
-  void draw_edges(const MatrixXd &V)
-  {
-    for (unsigned i = 0; i < V.rows() - 1; ++i)
-      viewer->data(0).add_edges(
-          V.row(i),
-          V.row(i + 1),
-          Eigen::RowVector3d(1, 1, 1));
-  }
 
-  /**
-* translate of the points of a vector 'a'
-**/
-  MatrixXd translate_points(const MatrixXd &V, MatrixXd a)
-  {
-    MatrixXd result = V; // copy the input points
-    for (int i = 0; i < V.rows(); ++i)
-    {
-      MatrixXd v = V.row(i);
-      result.row(i) = (v + a);
-    }
-    return result;
-  }
-
-  const Eigen::RowVector3d *red, *green, *yellow;
-
-private:
-
-  igl::opengl::glfw::Viewer *viewer; // a 4x4 matrix representing a linear transformation
-};
+	Faces << 0, 1, 2;
+}
