@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 	{
 		std::cout << "Creating a rectangle" << std::endl;
-		createRectangle(V, F);
+		createRectangle(V, F,8);
 	}
 	else
 	{

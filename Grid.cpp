@@ -39,7 +39,7 @@ class Grid
 	  G = Eigen::MatrixXi::Zero(size, size);
     }
 
-	void Add_Cage(MatrixXd cage)
+	void Add_Cage(MatrixXd& cage)
 	{
 		for (int i = 0; i < cage.rows(); i++){
 			Harmonics.push_back(MatrixXf::Zero(size, size));
@@ -47,17 +47,17 @@ class Grid
 		for (int i = 0; i < cage.rows(); i++)
 		{
 			int x0, y0, x1, y1;
-			x0 = (int)(cage.row(i)(0) - xMin) / step;
-			y0 = (int)(cage.row(i)(1) - yMin) / step;
+			x0 = std::round((cage.row(i)(0) - xMin) / step);
+			y0 = std::round((cage.row(i)(1) - yMin) / step);
 			if (i < cage.rows() - 1)
 			{
-				x1 = (int) (cage.row(i + 1)(0) - xMin) / step;
-				y1 = (int) (cage.row(i + 1)(1) - yMin) / step;
+				x1 = std::round((cage.row(i + 1)(0) - xMin) / step);
+				y1 = std::round((cage.row(i + 1)(1) - yMin) / step);
 			}
 			else
 			{
-				x1 = (int) (cage.row(0)(0) - xMin) / step;
-				y1 = (int) (cage.row(0)(1) - yMin) / step;
+				x1 = std::round((cage.row(0)(0) - xMin) / step);
+				y1 = std::round((cage.row(0)(1) - yMin) / step);
 			}
 			BresenhamsAlgorithm(x0,y0,x1,y1,i);
 		}
