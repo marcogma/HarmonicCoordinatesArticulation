@@ -9,6 +9,7 @@
 #include <igl/writeOFF.h>
 #include <igl/readPLY.h>
 #include "Grid.cpp"
+#include <igl/unproject_onto_mesh.h>
 
 using namespace std;
 
@@ -24,5 +25,10 @@ void createOctagon(MatrixXd &Vertices, MatrixXi &Faces);
 
 void createRectangle(MatrixXd &Vertices, MatrixXi &Faces);
 
+void createRectangle(MatrixXd& Vertices, MatrixXi& Faces, float size);
+
 void createTriangle(MatrixXd& Vertices, MatrixXi& Faces);
 
+RowVector3d get_MousePositionCoord(igl::opengl::glfw::Viewer& viewer, MatrixXd& V, MatrixXi& F);
+
+int get_ClosestVertex(MatrixXd& V, float x, float y);
