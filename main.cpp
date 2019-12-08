@@ -31,11 +31,14 @@ int main(int argc, char *argv[])
 	Grid G(5);
 	G.Add_Cage(V);
 	G.Fill_Grid_Regions();
-	G.Print_Grid();
-
+	//G.Print_Grid();
+	G.Laplacian_Smooth();
+	//G.Print_Harmonics(0);
 	igl::opengl::glfw::Viewer viewer; // create the 3d viewer
-	viewer.callback_key_down = &key_down;
+	G.draw_heatmap(viewer, 0);
 
+
+	viewer.callback_key_down = &key_down;
 	viewer.callback_mouse_move =
 	[&](igl::opengl::glfw::Viewer& viewer, int, int)->bool
 	{

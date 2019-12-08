@@ -1,6 +1,5 @@
 #include "Util.h"
 
-
 void draw_curve(igl::opengl::glfw::Viewer& viewer, const MatrixXd& V) {
 	viewer.append_mesh();
 	for (unsigned i = 0; i < V.rows() - 1; ++i)
@@ -19,6 +18,7 @@ void draw_points(igl::opengl::glfw::Viewer& viewer, const MatrixXd& V) {
 	viewer.append_mesh();
 	viewer.data(0).add_points(V, Eigen::RowVector3d(1, 0, 0));
 }
+
 
 /*interpolate the leftmost and rightmost X position*/
 void build_linspace(MatrixXd& linspace, const MatrixXd& V) {
@@ -82,10 +82,10 @@ void createRectangle(MatrixXd& Vertices, MatrixXi& Faces)
 	Vertices = MatrixXd(4, 3);
 	Faces = MatrixXi(2, 3);
 
-	Vertices << 0.0, 0.0, 0.0,
-				5.0, 0.000000, 0.000000,
-				5.0, 5.0, 0.000000,
-				0.000000, 5.0, 0.000000,
+	Vertices << -2.5, -2.5, 0.0,
+				      -2.5,  2.5, 0.000000,
+				       2.5, 2.5, 0.000000,
+			      	 2.5, -2.5, 0.000000,
 
 
 	Faces << 0, 1, 2,

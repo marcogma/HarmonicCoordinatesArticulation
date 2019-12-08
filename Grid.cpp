@@ -3,6 +3,7 @@
 #include <ostream>
 #include <cmath>
 #include <math.h>
+#include <utility>
 
 
 using namespace Eigen;
@@ -25,7 +26,7 @@ class Grid
   	float step; 
   	Eigen::MatrixXi G;  //Grid size*size. G(x,y) represents a Region: UNTYPED,BOUNDARY,INTERIOR,EXTERIOR
   	Eigen::MatrixXi Coarse_G;  //Grid size-1*size-1. G(x,y) represents coarse version of G, following the "pulling" rules
-  	MatrixXi InteriorV;
+  	std::vector<std::pair<int, int>> InteriorV;
   	std::vector<MatrixXf> Harmonics;
 	
 
@@ -40,6 +41,9 @@ class Grid
 
 	void Add_Cage(MatrixXd cage)
 	{
+		for (int i = 0; i < cage.rows(); i++){
+			Harmonics.push_back(MatrixXf::Zero(size, size));
+		}
 		for (int i = 0; i < cage.rows(); i++)
 		{
 			int x0, y0, x1, y1;
@@ -83,26 +87,45 @@ class Grid
 
 	void BresenhamsAlgorithm(int x0, int y0, int x1, int y1, int i)
 	{
+		Harmonics[i](x0,y0) = 1;
+
 		int dx = abs(x1 - x0);
 		int sx = x0 < x1 ? 1 : -1;
 		int dy = abs(y1 - y0);
 		int sy = y0 < y1 ? 1 : -1;
 		int err = (dx > dy ? dx : -dy) / 2;
 		int e2;
+		int xb = x0;
+		int yb = y0;
+		std::vector<std::pair<int, int>> pts;
 		while (1)
 		{
-			G(x0, y0) = BOUNDARY;
-			if (x0 == x1 && y0 == y1) break;
+			G(xb, yb) = BOUNDARY;
+			if (xb == x1 && yb == y1) break;
 			e2 = err;
 			if (e2 > -dx)
 			{
 				err -= dy;
-				x0 += sx;
+				xb += sx;
 			}
 			if (e2 < dy) 
 			{
 				err += dx;
-				y0 += sy;
+				yb += sy;
+			}
+			pts.push_back(std::pair<int,int>(xb, yb));
+		}
+
+		float t = 1 / (float) pts.size();
+
+		for (int j = 0; j < pts.size(); j++){
+			Harmonics[i](pts[j].first, pts[j].second) = 1 - t*(j+1);
+
+			if(i < Harmonics.size() - 1){
+				Harmonics[i+1](pts[j].first, pts[j].second) = t*(j+1);
+			}
+			else{
+				Harmonics[0](pts[j].first, pts[j].second) = t*(j+1);
 			}
 		}
 	}
@@ -113,7 +136,7 @@ class Grid
 	void Fill_Grid_Regions()
 	{
 		Flood_Fill(0, 0);
-		std::cout << "Working!" << std::endl;
+		//std::cout << "Working!" << std::endl;
 		for (int x = 0; x < size; x++)
 		{
 			for (int y = 0; y < size; y++)
@@ -121,11 +144,39 @@ class Grid
 				if (G(x, y) == UNTYPED)
 				{
 					G(x, y) = INTERIOR;
-
-					
+					InteriorV.push_back(std::pair<int,int>(x, y));
 			 	}
 			}
 
+		}
+
+	}
+
+	float mean2d(int x, int y, int idx){
+		return (Harmonics[idx](x+1,y) + Harmonics[idx](x, y+1) + Harmonics[idx](x, y - 1) + Harmonics[idx](x-1, y)) / 4.0;
+	}
+
+	void Laplacian_Smooth(float tau=0.00001, int idx = 0)
+	{
+		float change = 1;
+		float tmp;
+		while (change > tau)
+		{
+			change = 0;
+			Eigen::MatrixXf TempHarmonics=Harmonics[idx];
+			for (int i = 0; i < InteriorV.size(); i++)
+			{
+				int x = InteriorV[i].first;
+				int y = InteriorV[i].second;
+				//std::cout << "X: " << x << " Y: " << y << std::endl;
+				float mean = mean2d(x, y, idx);
+				float cellValue = TempHarmonics(x, y);
+				tmp = abs(mean - cellValue);
+				change = std::max(tmp, change);
+				TempHarmonics(x, y) = mean2d(x, y, idx);
+			}
+			std::cout <<"Change: " << change << std::endl;
+			Harmonics[idx] = TempHarmonics;
 		}
 
 	}
@@ -142,6 +193,36 @@ class Grid
 			std::cout << "\n";
 		}
 	}
+
+	void Print_Harmonics(int k) 
+	{
+		for (int i = 0; i < size; i++)
+		{
+			for (int j = 0; j < size; j++)
+			{
+				std::cout << Harmonics[k](i, j) << "  ";
+			}
+			std::cout << "\n";
+		}
+	}
+
+	void draw_heatmap(igl::opengl::glfw::Viewer& viewer, int idx){
+  		viewer.append_mesh();
+  		for (int i = 0; i < Harmonics[idx].rows(); i++){
+    		for (int j = 0; j < Harmonics[idx].cols(); j++){
+      			RowVectorXd point(3);
+      			float x = xMin + i*step;
+      			float y = yMin + j*step;
+      			point << x,y,0;
+      			if(Harmonics[idx](i,j) == 0){
+        			viewer.data(0).add_points(point, Eigen::RowVector3d(1, 0, 0));
+      			}
+      			else{
+        			viewer.data(0).add_points(point, Eigen::RowVector3d(0, Harmonics[idx](i,j), 0));
+      			}
+   		 	}
+  		}
+	}	
 
 
 
