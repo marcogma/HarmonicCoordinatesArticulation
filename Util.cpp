@@ -82,13 +82,13 @@ void createRectangle(MatrixXd& Vertices, MatrixXi& Faces)
 	Faces = MatrixXi(2, 3);
 
 	Vertices << -2.5, -2.5, 0.0,
-				      -2.5,  2.5, 0.000000,
-				       2.5, 2.5, 0.000000,
-			      	 2.5, -2.5, 0.000000,
+				-2.5,  2.5, 0.000000,
+				2.5, 2.5, 0.000000,
+			    2.5, -2.5, 0.000000,
 
 
 	Faces << 0, 1, 2,
-		2, 3, 1;
+			2, 3, 1;
 }
 
 void createTriangle(MatrixXd& Vertices, MatrixXi& Faces)
@@ -97,9 +97,9 @@ void createTriangle(MatrixXd& Vertices, MatrixXi& Faces)
 	Faces = MatrixXi(1, 3);
 
 	
-	Vertices << 2.0, 2.0, 0.0,
-				4.0, 4.000000, 0.000000,
-				6.0, 2.0, 0.000000,
+	Vertices << 0.0, 0.0, 0.0,
+				1.0, 1.0, 0.000000,
+				2.0, 0.0, 0.000000,
 
 
 	Faces << 0, 1, 2;

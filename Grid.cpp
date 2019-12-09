@@ -13,10 +13,10 @@ using namespace Eigen;
 #define INTERIOR 2
 #define EXTERIOR 3
 
-const float xMin = -10;
-const float yMin = -10;
-const float xMax = 10;
-const float yMax = 10;
+const float xMin = -5;
+const float yMin = -5;
+const float xMax = 5;
+const float yMax = 5;
 
 class Grid
 {
@@ -28,7 +28,8 @@ class Grid
   	Eigen::MatrixXi Coarse_G;  //Grid size-1*size-1. G(x,y) represents coarse version of G, following the "pulling" rules
   	std::vector<std::pair<int, int>> InteriorV;
   	std::vector<MatrixXf> Harmonics;
-	
+	Eigen::MatrixXd cageV;
+	Eigen::MatrixXd meshV;
 
 
   public:
@@ -41,28 +42,41 @@ class Grid
 
 	void Add_Cage(MatrixXd cage)
 	{
+
 		for (int i = 0; i < cage.rows(); i++){
 			Harmonics.push_back(MatrixXf::Zero(size, size));
 		}
 		for (int i = 0; i < cage.rows(); i++)
 		{
 			int x0, y0, x1, y1;
-			x0 = (int)(cage.row(i)(0) - xMin) / step;
-			y0 = (int)(cage.row(i)(1) - yMin) / step;
+			x0 = std::round((cage.row(i)(0) - xMin) / step);
+			y0 = std::round((cage.row(i)(1) - yMin) / step);
 			if (i < cage.rows() - 1)
 			{
-				x1 = (int) (cage.row(i + 1)(0) - xMin) / step;
-				y1 = (int) (cage.row(i + 1)(1) - yMin) / step;
+				x1 = std::round((cage.row(i + 1)(0) - xMin) / step);
+				y1 = std::round((cage.row(i + 1)(1) - yMin) / step);
 			}
 			else
 			{
-				x1 = (int) (cage.row(0)(0) - xMin) / step;
-				y1 = (int) (cage.row(0)(1) - yMin) / step;
+				x1 = std::round((cage.row(0)(0) - xMin) / step);
+				y1 = std::round((cage.row(0)(1) - yMin) / step);
 			}
 			BresenhamsAlgorithm(x0,y0,x1,y1,i);
 		}
 
 		
+	}
+
+	void Add_Mesh(MatrixXd mesh){
+		meshV = mesh;
+	}
+
+	void updateMesh(){
+		for (int i = 0; i < meshV.rows(); i++){
+			for(int j = 0; j < cageV.rows(); j++){
+				
+			}
+		}
 	}
 
 	//Traverse the grid and changes the OldTag to a NewTag until a StopTag Appears 
@@ -175,7 +189,7 @@ class Grid
 				change = std::max(tmp, change);
 				TempHarmonics(x, y) = mean2d(x, y, idx);
 			}
-			std::cout <<"Change: " << change << std::endl;
+			//std::cout <<"Change: " << change << std::endl;
 			Harmonics[idx] = TempHarmonics;
 		}
 

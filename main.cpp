@@ -1,6 +1,6 @@
 #include "Util.h"
 
-MatrixXd V;
+MatrixXd Cage;
 MatrixXi F;
 MatrixXd Vi;
 MatrixXi Fi;
@@ -16,28 +16,26 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 	{
 		std::cout << "Creating a rectangle" << std::endl;
-		createRectangle(V, F);
+		createTriangle(Cage, F);
 	}
 	else
 	{
 
 	}
-	Grid G(6);
-	G.Add_Cage(V);
+	Grid G(7);
+	G.Add_Cage(Cage);
 
 	G.Fill_Grid_Regions();
-	//G.Print_Grid();
 	G.Laplacian_Smooth();
-	//G.Print_Harmonics(0);
 	igl::opengl::glfw::Viewer viewer; // create the 3d viewer
 	viewer.callback_key_down = &key_down;
-	G.draw_heatmap(viewer, 0);
-	draw_points(viewer, V); // draw the bounding box (red edges and vertices)
-	draw_curve(viewer, V);
+	//G.draw_heatmap(viewer, 0);
+	draw_points(viewer, Cage); // draw the bounding box (red edges and vertices)
+	draw_curve(viewer, Cage);
 
 
 
-	viewer.core(0).align_camera_center(V, F);
+	viewer.core(0).align_camera_center(Cage, F);
 	viewer.launch(); // run the viewer
 	
 }
