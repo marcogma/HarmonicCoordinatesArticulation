@@ -1,7 +1,7 @@
 #include "Util.h"
 
 void draw_curve(igl::opengl::glfw::Viewer& viewer, const MatrixXd& V) {
-	viewer.append_mesh();
+	//viewer.append_mesh();
 	for (unsigned i = 0; i < V.rows() - 1; ++i)
 		viewer.data().add_edges(
 			V.row(i),
@@ -15,7 +15,7 @@ void draw_curve(igl::opengl::glfw::Viewer& viewer, const MatrixXd& V) {
 
 /*draw points from the list of points V*/
 void draw_points(igl::opengl::glfw::Viewer& viewer, const MatrixXd& V) {
-	viewer.append_mesh();
+	//viewer.append_mesh();
 	viewer.data(0).add_points(V, Eigen::RowVector3d(1, 0, 0));
 }
 
@@ -156,4 +156,42 @@ int get_ClosestVertex(MatrixXd& V, float x, float y)
 	}
 
 	return -1;
+}
+
+
+//void assignWeights(std::vector<MatrixXf> Harmonics, MatrixXd meshV) {
+//	for (int i = 0; i < meshV.rows(); i++) {
+//		std::vector<float> temp;
+//		for (int j = 0; j < Harmonics.size(); j++) {
+//			temp.push_back(Harmonics[j](std::round((meshV.row(i)(0) - xMin) / step), std::round((meshV.row(i)(1) - yMin) / step)));
+//		}
+//		weights.push_back(temp);
+//	}
+//}
+
+void updateMesh(const MatrixXd& cage, MatrixXd& meshV, std::vector<MatrixXf> Harmonics, float step) {
+	PrintMatrix(meshV, "Before changing");
+	for (int i = 0; i < meshV.rows(); i++) {
+		int xmesh = std::round((meshV.row(i)(0) - xMin) / step);
+		int ymesh = std::round((meshV.row(i)(1) - yMin) / step);
+		RowVectorXd point(3);
+		point << 0, 0, 0;
+		std::cout << "mesh Vertex : " << i << std::endl;
+		for (int j = 0; j < cage.rows(); j++) {
+			float weight=Harmonics[j](xmesh,ymesh);
+			std::cout <<"Vertex : " << j << "  weights " << weight << std::endl; // << "x " << cage(j,0) << " Y " << cage(j,1)<< endl;
+			point(0) += weight * cage(j, 0);
+			point(1) += weight * cage(j, 1);
+		}
+		meshV.row(i) = point;
+	}
+	PrintMatrix(meshV,"After changing");
+}
+
+void PrintMatrix(const MatrixXd& m, string message) {
+	std::cout << message << std::endl;
+	for (int j = 0; j < m.rows(); j++) {
+		std::cout << "X: " << m(j, 0) << " Y: " << m(j, 1) << std::endl;
+	}
+	std::cout <<endl;
 }

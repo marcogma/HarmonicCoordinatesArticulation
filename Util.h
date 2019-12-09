@@ -32,3 +32,7 @@ void createTriangle(MatrixXd& Vertices, MatrixXi& Faces);
 RowVector3d get_MousePositionCoord(igl::opengl::glfw::Viewer& viewer, MatrixXd& V, MatrixXi& F);
 
 int get_ClosestVertex(MatrixXd& V, float x, float y);
+
+void updateMesh(const MatrixXd& cage, MatrixXd& meshV, std::vector<MatrixXf> Harmonics, float step);
+
+void PrintMatrix(const MatrixXd& m, string message);

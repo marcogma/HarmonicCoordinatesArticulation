@@ -352,5 +352,14 @@ class Grid
 	}	
 
 
+	std::vector<MatrixXf> get_Harmonics() {
+		return Harmonics;
+	}
+
+	float get_step() {
+		return step;
+	}
+
+
 
   };
