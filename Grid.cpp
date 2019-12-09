@@ -13,10 +13,10 @@ using namespace Eigen;
 #define INTERIOR 2
 #define EXTERIOR 3
 
-const float xMin = -5;
-const float yMin = -5;
-const float xMax = 5;
-const float yMax = 5;
+const float xMin = -10;
+const float yMin = -10;
+const float xMax = 10;
+const float yMax = 10;
 
 class Grid
 {
@@ -30,6 +30,8 @@ class Grid
   	std::vector<MatrixXf> Harmonics;
 	Eigen::MatrixXd cageV;
 	Eigen::MatrixXd meshV;
+	std::vector<std::vector<float>> weights;
+
 
 
   public:
@@ -40,7 +42,7 @@ class Grid
 	  G = Eigen::MatrixXi::Zero(size, size);
     }
 
-	void Add_Cage(MatrixXd cage)
+	void Add_Cage(const MatrixXd &cage)
 	{
 
 		for (int i = 0; i < cage.rows(); i++){
@@ -67,17 +69,36 @@ class Grid
 		
 	}
 
-	void Add_Mesh(MatrixXd mesh){
+	void Add_Mesh(const MatrixXd &mesh){
 		meshV = mesh;
 	}
 
-	void updateMesh(){
+	MatrixXd MeshVertices(){
+		return meshV;
+	}
+
+	void assignWeights(){
 		for (int i = 0; i < meshV.rows(); i++){
-			for(int j = 0; j < cageV.rows(); j++){
-				
+			std::vector<float> temp;
+			for(int j = 0; j < Harmonics.size(); j++){
+				temp.push_back(Harmonics[j](std::round((meshV.row(i)(0) - xMin) / step), std::round((meshV.row(i)(1) - yMin) / step)));
 			}
+			weights.push_back(temp);
 		}
 	}
+
+	void updateMesh(const MatrixXd &cage){
+		for (int i = 0; i < meshV.rows(); i++){
+			RowVectorXd point(3);
+			point << 0,0,0;
+			for (int j = 0; j < cage.rows(); j++){
+				point(0) += weights[i][j]*cage(j,0);
+				point(1) += weights[i][j]*cage(j,1);
+			}
+			meshV.row(i) = point;
+		}
+	}
+
 
 	//Traverse the grid and changes the OldTag to a NewTag until a StopTag Appears 
 	void Flood_Fill(int x, int y)
@@ -237,7 +258,10 @@ class Grid
    		 	}
   		}
 	}	
-
+	
+	std::vector<std::vector<float>> get_weights(){
+		return weights;
+	}
 
 
   };
