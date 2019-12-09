@@ -19,20 +19,14 @@ void draw_points(igl::opengl::glfw::Viewer& viewer, const MatrixXd& V);
 
 void build_linspace(MatrixXd& linspace, const MatrixXd& V);
 
-bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier);
-
 void createOctagon(MatrixXd &Vertices, MatrixXi &Faces);
 
 void createRectangle(MatrixXd &Vertices, MatrixXi &Faces);
 
-void createRectangle(MatrixXd& Vertices, MatrixXi& Faces, float size);
-
 void createTriangle(MatrixXd& Vertices, MatrixXi& Faces);
 
 RowVector3d get_MousePositionCoord(igl::opengl::glfw::Viewer& viewer, MatrixXd& V, MatrixXi& F);
+int get_ClosestVertex(MatrixXd& V, float x, float y);
+void createRectangle(MatrixXd& Vertices, MatrixXi& Faces, float size);
 
 int get_ClosestVertex(MatrixXd& V, float x, float y);
-
-void updateMesh(const MatrixXd& cage, MatrixXd& meshV, std::vector<MatrixXf> Harmonics, float step);
-
-void PrintMatrix(const MatrixXd& m, string message);

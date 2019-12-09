@@ -45,12 +45,6 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 	return false;
 }
 
-
-
-
-
-
-
 /**
  * Create a triangle mesh corresponding to an octagon inscribed in the unit circle
  */
@@ -82,10 +76,10 @@ void createRectangle(MatrixXd& Vertices, MatrixXi& Faces)
 	Vertices = MatrixXd(4, 3);
 	Faces = MatrixXi(2, 3);
 
-	Vertices << -2.5, -2.5, 0.0,
-				      -2.5,  2.5, 0.000000,
-				       2.5, 2.5, 0.000000,
-			      	 2.5, -2.5, 0.000000,
+	Vertices << -5, -5, 0.0,
+				-5,  5, 0.000000,
+				 5, 5, 0.000000,
+			     5, -5, 0.000000,
 
 
 	Faces << 0, 1, 2,
@@ -112,13 +106,13 @@ void createRectangle(MatrixXd& Vertices, MatrixXi& Faces, float size)
 	Faces = MatrixXi(2, 3);
 
 	Vertices << -size, -size, 0.0,
-		size, -size, 0.000000,
-		size, size, 0.000000,
-		-size, size, 0.000000,
+				 size, -size, 0.0,
+				 size, size, 0.0,
+				-size, size, 0.0,
 
 
-		Faces << 0, 1, 2,
-		2, 3, 1;
+	Faces << 0, 1, 2,
+			 2, 3, 1;
 }
 
 
@@ -144,54 +138,12 @@ RowVector3d get_MousePositionCoord(igl::opengl::glfw::Viewer& viewer, MatrixXd& 
 
 }
 
-int get_ClosestVertex(MatrixXd& V, float x, float y)
-{
+int get_ClosestVertex(MatrixXd& V, float x, float y){
 	int closest = 0;
-	for (int i = 0; i < V.rows(); i++)
-	{
-		if (std::sqrt(std::pow(V.row(i)(0) - x, 2) + std::pow(V.row(i)(1) - y, 2)) < 0.3)
-		{
+	for (int i = 0; i < V.rows(); i++){
+		if (std::sqrt(std::pow(V.row(i)(0) - x, 2) + std::pow(V.row(i)(1) - y, 2)) < 0.3){
 			return(i);
 		}
 	}
-
 	return -1;
-}
-
-
-//void assignWeights(std::vector<MatrixXf> Harmonics, MatrixXd meshV) {
-//	for (int i = 0; i < meshV.rows(); i++) {
-//		std::vector<float> temp;
-//		for (int j = 0; j < Harmonics.size(); j++) {
-//			temp.push_back(Harmonics[j](std::round((meshV.row(i)(0) - xMin) / step), std::round((meshV.row(i)(1) - yMin) / step)));
-//		}
-//		weights.push_back(temp);
-//	}
-//}
-
-void updateMesh(const MatrixXd& cage, MatrixXd& meshV, std::vector<MatrixXf> Harmonics, float step) {
-	PrintMatrix(meshV, "Before changing");
-	for (int i = 0; i < meshV.rows(); i++) {
-		int xmesh = std::round((meshV.row(i)(0) - xMin) / step);
-		int ymesh = std::round((meshV.row(i)(1) - yMin) / step);
-		RowVectorXd point(3);
-		point << 0, 0, 0;
-		std::cout << "mesh Vertex : " << i << std::endl;
-		for (int j = 0; j < cage.rows(); j++) {
-			float weight=Harmonics[j](xmesh,ymesh);
-			std::cout <<"Vertex : " << j << "  weights " << weight << std::endl; // << "x " << cage(j,0) << " Y " << cage(j,1)<< endl;
-			point(0) += weight * cage(j, 0);
-			point(1) += weight * cage(j, 1);
-		}
-		meshV.row(i) = point;
-	}
-	PrintMatrix(meshV,"After changing");
-}
-
-void PrintMatrix(const MatrixXd& m, string message) {
-	std::cout << message << std::endl;
-	for (int j = 0; j < m.rows(); j++) {
-		std::cout << "X: " << m(j, 0) << " Y: " << m(j, 1) << std::endl;
-	}
-	std::cout <<endl;
 }
