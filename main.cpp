@@ -1,5 +1,5 @@
 #include "Util.h"
-
+#include <igl/readPLY.h>
 MatrixXd V;
 MatrixXi F;
 MatrixXd Vi;
@@ -17,21 +17,33 @@ int clickedVertex;
 int main(int argc, char *argv[])
 {
 
-	if (argc < 2)
+	if (argc < 1)
 	{
 		std::cout << "Creating a rectangle" << std::endl;
-		createRectangle(V, F,8);
+		createRectangle(V, F,4);
 	}
 	else
 	{
-
+		igl::readPLY("../data/figure.ply", V, F);
 	}
-
+	//createRectangle(V, F, 4);
 	createRectangle(Vmouse, Fmouse, 20.0); // Mouse area
-	Grid G(5);
+	Grid G(6);
 	G.Add_Cage(V);
 	G.Fill_Grid_Regions();
-	//G.Print_Grid();
+	std::cout << "********* GRID BEFORE LAPLACIAN**********" << std::endl;
+	G.Print_Grid();
+	//std::cout << "********* Harmonics in boundaries BEFORE LAPLACIAN**********" << std::endl;
+	//G.Print_Harmonics(0);
+	//Coarse grid
+	G.Fill_CoarseGrid();
+	std::cout << "********* Coarsed GRID BEFORE LAPLACIAN**********" << std::endl;
+	G.Print_CoarseGrid();
+	//std::cout << "********* Harmonics in boundaries BEFORE LAPLACIAN**********" << std::endl;
+	//G.Print_CoarseHarmonics(0);
+	std::cout << "********* **********" << std::endl;
+	G.Laplacian_Smooth_Coarse();
+	G.Push_CoarseHarmonics();
 	G.Laplacian_Smooth();
 	//G.Print_Harmonics(0);
 	igl::opengl::glfw::Viewer viewer; // create the 3d viewer
