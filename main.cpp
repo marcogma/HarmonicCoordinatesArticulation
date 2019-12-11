@@ -1,4 +1,6 @@
 #include "Util.h"
+#include <ctime>
+#include <chrono>
 
 MatrixXd cageVertices;
 MatrixXi cageFaces;
@@ -8,6 +10,8 @@ MatrixXi meshFaces;
 
 MatrixXd Vmouse;
 MatrixXi Fmouse;
+
+bool parallel = false;
 
 std::vector<std::vector<float>> weights;
 
@@ -36,6 +40,10 @@ bool mouse_move(igl::opengl::glfw::Viewer& viewer, int mouse_x, int mouse_y){
 			viewer.data().clear();
 			viewer.data(0).add_points(cageVertices, Eigen::RowVector3d(1, 0, 0));
 			draw_curve(viewer, cageVertices);
+			// Drawing mesh
+			updateMesh(weights, meshVertices, cageVertices);
+			viewer.data(0).add_points(meshVertices, Eigen::RowVector3d(1, 0, 0));
+			draw_curve(viewer, meshVertices);
 		}
 		return true;
 };
@@ -68,15 +76,18 @@ int main(int argc, char *argv[])
 	createRectangleMouse(Vmouse, Fmouse, 20.0);
 	if (argc < 2)
 	{
-		createRectangle(cageVertices, cageFaces, 8);
-		std::cout << "Creating a rectangle" << std::endl;
-		//cageVertices= createCircle(8 ,30);
-		meshVertices = createCircle(6, 25);
+		cageVertices = createCircle(5, 500);
+		meshVertices = createCircle(3, 800);
 	}
 	else
 	{
-		igl::readPLY("../data/figure2.ply", cageVertices, cageFaces);
-		igl::readPLY("../data/ifigure2.ply", meshVertices, meshFaces);
+		if (std::strncmp(argv[1],"-p", 2) == 0){
+			parallel = true;
+		}
+		//igl::readPLY("../data/humanCage.ply", cageVertices, cageFaces);
+		//cageVertices = createCircle(8, 8);
+		createRectangle(cageVertices, cageFaces, 8);
+		igl::readPLY("../data/humanFigure.ply", meshVertices, meshFaces);
 	}
 	;
 	Grid G(7);
@@ -91,20 +102,40 @@ int main(int argc, char *argv[])
 	//}
 	//G.Push_CoarseHarmonics();
 
+	if (parallel){
+		std::cout << "Parallel realization" << std::endl; 
+		auto start = std::chrono::high_resolution_clock::now();
 
-	for (int i = 0; i < cageVertices.rows();i++){
-		G.Laplacian_Smooth(0.00001, i);
-	}
-	G.assignWeights();
-	weights = G.get_weights();
-	for (int i = 0; i < weights.size(); i++){
-		std::cout<<"i: " << i << " ";
-		float sum = 0;
-		for (int j = 0; j < weights[i].size(); j++){
-			sum += weights[i][j];
+		int num_threads = cageVertices.rows();
+		std::thread t[num_threads];
+		for (int i = 0; i < num_threads; i++){
+			t[i] = std::thread(&Grid::Laplacian_Smooth, &G, 0.000001, i);
 		}
-		std::cout<< "sum: " << sum << std::endl;
+		for (int i = 0; i < num_threads; i++){
+			t[i].join();
+		}
+		auto finish = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = finish - start;
+		std::cout << "Elapsed time: " << elapsed.count() << std::endl;
 	}
+	else{
+		std::cout << "Sequential realization" << std::endl; 
+		auto start = std::chrono::high_resolution_clock::now();
+		for (int i = 0; i < cageVertices.rows();i++){
+			G.Laplacian_Smooth(0.000001, i);
+		}
+		auto finish = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = finish - start;
+		std::cout << "Elapsed time: " << elapsed.count() << std::endl;
+	}
+
+	G.assignWeights();
+
+	// Estimate mean error
+	std::cout << "Mean error is: " << G.estimate_mean_error() << std::endl;
+
+	weights = G.get_weights();
+
 	igl::opengl::glfw::Viewer viewer; // create the 3d viewer
 	//G.draw_heatmap(viewer,0);
 

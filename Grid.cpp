@@ -4,6 +4,7 @@
 #include <cmath>
 #include <math.h>
 #include <utility>
+#include <thread>
 
 
 using namespace Eigen;
@@ -47,7 +48,7 @@ class Grid
 
 	void Add_Cage(const MatrixXd &cage)
 	{
-
+		cageV = cage;
 		for (int i = 0; i < cage.rows(); i++){
 			Harmonics.push_back(MatrixXf::Zero(size, size));
 			Coarse_Harmonics.push_back(MatrixXf::Zero(size / 2, size / 2));
@@ -214,11 +215,12 @@ class Grid
 				change = std::max(tmp, change);
 				TempHarmonics(x, y) = mean2d(x, y, idx);
 			}
-			//std::cout <<"Change: " << change << std::endl;
 			Harmonics[idx] = TempHarmonics;
 		}
 
 	}
+
+	
 
 
 	void Print_Grid() 
@@ -356,6 +358,31 @@ class Grid
 
 		}
 
+	}
+
+	float estimate_mean_error(){
+		float sum = 0;
+		for (int i = 0; i < meshV.rows(); i++){
+			RowVectorXd point(3);
+			point << 0,0,0;
+			for (int j = 0; j < weights[i].size(); j++){
+				point(0) += weights[i][j]*cageV(j,0);
+				point(1) += weights[i][j]*cageV(j,1);
+			}
+			sum += std::sqrt(std::pow(point(0) - meshV(i,0),2) + std::pow(point(1) - meshV(i,1),2));
+		}
+		return sum / (float)meshV.rows();
+	}
+
+	void print_weights(){
+		for (int i = 0; i < weights.size(); i++){
+			std::cout<<"i: " << i << " ";
+			float sum = 0;
+			for (int j = 0; j < weights[i].size(); j++){
+				sum += weights[i][j];
+			}
+			std::cout<< "sum: " << sum << std::endl;
+		}
 	}
 
   };
