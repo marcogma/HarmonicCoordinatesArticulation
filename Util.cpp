@@ -115,6 +115,23 @@ void createRectangle(MatrixXd& Vertices, MatrixXi& Faces, float size)
 			 2, 3, 1;
 }
 
+void createRectangleMouse(MatrixXd& Vertices, MatrixXi& Faces, float size)
+{
+	Vertices = MatrixXd(5, 3);
+	Faces = MatrixXi(4, 3);
+
+	Vertices << -size, -size, 0.0,
+		size, -size, 0.0,
+		size, size, 0.0,
+		-size, size, 0.0,
+		0, 0, 0;
+
+		Faces << 0,1,4,
+			     1,2,4,
+			     2,3,4,
+			     3,0,4;
+}
+
 
 
 RowVector3d get_MousePositionCoord(igl::opengl::glfw::Viewer& viewer, MatrixXd& V, MatrixXi& F)
@@ -146,4 +163,20 @@ int get_ClosestVertex(MatrixXd& V, float x, float y){
 		}
 	}
 	return -1;
+}
+
+MatrixXd createCircle(float radius, int numberPoints) {
+	float da = 2 * 3.14159 / numberPoints;
+	int i = 0;
+	MatrixXd Vc(numberPoints, 3);
+	for (double angle = 0; i < numberPoints; angle += da) {
+		float x = radius * cos(angle);
+		float y = radius * sin(angle);
+		Vc(i, 0) = x;
+		Vc(i, 1) = y;
+		Vc(i, 2) = 0;
+		i++;
+	}
+	return Vc;
+	
 }

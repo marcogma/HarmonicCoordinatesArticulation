@@ -30,3 +30,7 @@ int get_ClosestVertex(MatrixXd& V, float x, float y);
 void createRectangle(MatrixXd& Vertices, MatrixXi& Faces, float size);
 
 int get_ClosestVertex(MatrixXd& V, float x, float y);
+
+MatrixXd createCircle(float radius, int numberPoints);
+
+void createRectangleMouse(MatrixXd& Vertices, MatrixXi& Faces, float size);

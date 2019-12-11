@@ -37,7 +37,7 @@ bool mouse_move(igl::opengl::glfw::Viewer& viewer, int mouse_x, int mouse_y){
 			viewer.data(0).add_points(cageVertices, Eigen::RowVector3d(1, 0, 0));
 			draw_curve(viewer, cageVertices);
 		}
-		return false;
+		return true;
 };
 
 bool mouse_down(igl::opengl::glfw::Viewer& viewer, int button, int modifier){
@@ -65,34 +65,35 @@ bool mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifier){
 // ------------ main program ----------------
 int main(int argc, char *argv[])
 {
-	createRectangle(Vmouse, Fmouse, 20.0);
+	createRectangleMouse(Vmouse, Fmouse, 20.0);
 	if (argc < 2)
 	{
+		createRectangle(cageVertices, cageFaces, 8);
 		std::cout << "Creating a rectangle" << std::endl;
-		createRectangle(cageVertices, cageFaces);
-		createRectangle(meshVertices, meshFaces, 2);
+		//cageVertices= createCircle(8 ,30);
+		meshVertices = createCircle(6, 25);
 	}
 	else
 	{
 		igl::readPLY("../data/figure2.ply", cageVertices, cageFaces);
 		igl::readPLY("../data/ifigure2.ply", meshVertices, meshFaces);
 	}
-
-	Grid G(5);
+	;
+	Grid G(7);
 	G.Add_Cage(cageVertices);
 	G.Add_Mesh(meshVertices);
 	G.Fill_Grid_Regions();
 
 
-	G.Fill_CoarseGrid();
-	for (int i = 0; i < cageVertices.rows(); i++) {
-		G.Laplacian_Smooth_Coarse(0.000001, i);
-	}
-	G.Push_CoarseHarmonics();
+	//G.Fill_CoarseGrid();
+	//for (int i = 0; i < cageVertices.rows(); i++) {
+	//	G.Laplacian_Smooth_Coarse(0.00001, i);
+	//}
+	//G.Push_CoarseHarmonics();
 
 
 	for (int i = 0; i < cageVertices.rows();i++){
-		G.Laplacian_Smooth(0.000001, i);
+		G.Laplacian_Smooth(0.00001, i);
 	}
 	G.assignWeights();
 	weights = G.get_weights();
@@ -117,7 +118,6 @@ int main(int argc, char *argv[])
 	viewer.callback_mouse_move = &mouse_move;
 	viewer.callback_mouse_down = &mouse_down;
 	viewer.callback_mouse_up = &mouse_up;
-
 
 	viewer.launch(); // run the viewer	
 }
